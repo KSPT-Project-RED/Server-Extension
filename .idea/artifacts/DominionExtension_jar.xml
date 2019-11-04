@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="DominionExtension:jar">
+    <output-path>/Applications/SmartFoxServer_2X/SFS2X/extensions/DominionExtension</output-path>
+    <root id="archive" name="DominionExtension.jar">
+      <element id="module-output" name="extension" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/main/resources/sfs2x-core.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/main/resources/sfs2x.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
