@@ -1,8 +1,13 @@
 package com.trpo.dominion;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class CardArray {
     List<CardInfo> cards = new ArrayList<CardInfo>();
 
@@ -126,6 +131,48 @@ public class CardArray {
                 false,
                 0,
                 "tools-3411589_1920"));
+
+        cards.add(new CardInfo(
+                "деревня",
+                "",
+                "действие",
+                3,
+                2,
+                0,
+                0,
+                1,
+                0,
+                0,
+                false,
+                0,
+                "windmill-3626846_960_720"));
+
+        cards.add(new CardInfo(
+                "торговец",
+                "",
+                "действие",
+                3,
+                1,
+                0,
+                0,
+                1,
+                0,
+                0,
+                false,
+                0,
+                "money-307192_960_720"));
     }
 
+    public CardInfo getCardByName(String name){
+        for(int i=0;i<cards.size();i++){
+            if(cards.get(i).getName().equals(name)){
+                return cards.get(i);
+            }
+        }
+        return null;
+    }
+
+    public Integer getSize(){
+        return cards.size();
+    }
 }

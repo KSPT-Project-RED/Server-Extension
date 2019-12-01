@@ -62,33 +62,25 @@ public class DominionExtension extends SFSExtension {
         resObj.putUtfString("p2name", player2.getName());
         resObj.putInt("p2id", player2.getId());
 
-        //отправляем карты (нужно инфу брать из бд)
-        ISFSObject card1 = new SFSObject();
-        card1.putUtfString("Name", "Погреба");
-        card1.putUtfString("Description", "Сбросьте любое число карт, возьмите столько карт, сколько сбросили.");
-        card1.putUtfString("Type", "Действие");
-        card1.putInt("Actions", 1);
-        card1.putInt("Money", 0);
-        card1.putInt("Buy", 0);
-        card1.putInt("Cards", 0);
-        card1.putInt("Cost", 2);
+        //по-хорошему надо брать карты из бд, ну или хотя бы завести список компбинаций карт (сейчас используктся первая)
+        CardArray cardArray = new CardArray();
+        ISFSArray cards = new SFSArray();
+        for(int i=0;i<cardArray.getSize();i++){
+            ISFSObject card = new SFSObject();
+            card.putUtfString("Name", cardArray.getCards().get(i).getName());
+            card.putUtfString("Description", cardArray.getCards().get(i).getDescription());
+            card.putInt("Action", cardArray.getCards().get(i).getAction());
+            card.putInt("Money", cardArray.getCards().get(i).getMoney());
+            card.putInt("Buy", cardArray.getCards().get(i).getBuy());
+            card.putInt("Cards", cardArray.getCards().get(i).getCards());
+            card.putInt("Cost", cardArray.getCards().get(i).getCost());
+            card.putUtfString("ImageId", cardArray.getCards().get(i).getImageId());
+            cards.addSFSObject(card);
+        }
 
-        ISFSObject card2 = new SFSObject();
-        card2.putUtfString("Name", "Рынок");
-        card2.putUtfString("Description", "");
-        card2.putUtfString("Type", "Действие");
-        card2.putInt("Actions", 1);
-        card2.putInt("Money", 1);
-        card2.putInt("Buy", 1);
-        card2.putInt("Cards", 1);
-        card2.putInt("Cost", 5);
 
-        ISFSArray cardArray = new SFSArray();
-        cardArray.addSFSObject(card1);
-        cardArray.addSFSObject(card2);
-
-        trace("SIZE CARD ARRAY: "+cardArray.size());
-        resObj.putSFSArray("cards", cardArray);
+        trace("SIZE CARD ARRAY: "+cards.size());
+        resObj.putSFSArray("cards", cards);
 
         send("start", resObj, getParentRoom().getUserList());
     }
