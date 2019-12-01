@@ -22,7 +22,7 @@ public class ZoneJoinEventHandler extends BaseServerEventHandler
         User theUser = (User) event.getParameter(SFSEventParam.USER);
 
         // dbid is a hidden UserVariable, available only server side
-        UserVariable uv_dbId = new SFSUserVariable("dbid", theUser.getSession().getProperty(DBSignUpAndSignIn.DATABASE_ID));
+        UserVariable uv_dbId = new SFSUserVariable("dbid", theUser.getSession().getProperty(DominionExtension.DATABASE_ID));
         uv_dbId.setHidden(true);
 
         // The avatar UserVariable is a regular UserVariable

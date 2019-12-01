@@ -68,7 +68,7 @@ public class LoginEventHandler extends BaseServerEventHandler
             }
 
             // Store the client dbId in the session
-            session.setProperty(DBSignUpAndSignIn.DATABASE_ID, dbId);
+            session.setProperty(DominionExtension.DATABASE_ID, dbId);
         }
 
         // User name was not found
