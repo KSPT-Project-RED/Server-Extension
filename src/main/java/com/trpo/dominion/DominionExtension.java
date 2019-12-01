@@ -4,9 +4,13 @@ import com.smartfoxserver.v2.components.signup.SignUpAssistantComponent;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
+import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
+
+import javax.swing.text.html.HTMLDocument;
 
 public class DominionExtension extends SFSExtension {
 
@@ -57,6 +61,34 @@ public class DominionExtension extends SFSExtension {
         resObj.putInt("p1id", player1.getId());
         resObj.putUtfString("p2name", player2.getName());
         resObj.putInt("p2id", player2.getId());
+
+        //отправляем карты (нужно инфу брать из бд)
+        ISFSObject card1 = new SFSObject();
+        card1.putUtfString("Name", "Погреба");
+        card1.putUtfString("Description", "Сбросьте любое число карт, возьмите столько карт, сколько сбросили.");
+        card1.putUtfString("Type", "Действие");
+        card1.putInt("Actions", 1);
+        card1.putInt("Money", 0);
+        card1.putInt("Buy", 0);
+        card1.putInt("Cards", 0);
+        card1.putInt("Cost", 2);
+
+        ISFSObject card2 = new SFSObject();
+        card2.putUtfString("Name", "Рынок");
+        card2.putUtfString("Description", "");
+        card2.putUtfString("Type", "Действие");
+        card2.putInt("Actions", 1);
+        card2.putInt("Money", 1);
+        card2.putInt("Buy", 1);
+        card2.putInt("Cards", 1);
+        card2.putInt("Cost", 5);
+
+        ISFSArray cardArray = new SFSArray();
+        cardArray.addSFSObject(card1);
+        cardArray.addSFSObject(card2);
+
+        trace("SIZE CARD ARRAY: "+cardArray.size());
+        resObj.putSFSArray("cards", cardArray);
 
         send("start", resObj, getParentRoom().getUserList());
     }
