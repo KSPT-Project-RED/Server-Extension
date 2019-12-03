@@ -38,10 +38,13 @@ public class Player {
     }
 
     public boolean buyNewCard(String card) {
+        //trace("AAAAAAAA66666666  "+card);
         CardInfo cardInfo = cardArray.getCardByName(card);
-        if (cardInfo.getCost() < money && buy > 0) {
+        //trace("AAAAAAAA77777777");
+        System.out.println(cardInfo.getCost()+" ;;; "+buy);
+        if (cardInfo.getCost() <= money && buy > 0) {
             money -= cardInfo.getCost();
-            dropCards.add(card);
+            hand.add(card);
             buy--;
             return true;
         }
@@ -66,11 +69,12 @@ public class Player {
 
     private void resetState() {
         money = 0;
-        actions = 0;
-        buy = 0;
+        actions = 1;
+        buy = 1;
     }
 
-    private void updateCurrentPlayerState() {
+    public void updateCurrentPlayerState() {
+        resetState();
         for (String card : hand) {
             CardInfo cardInfo = cardArray.getCardByName(card);
             if (cardInfo.getType().equals("деньги")) {

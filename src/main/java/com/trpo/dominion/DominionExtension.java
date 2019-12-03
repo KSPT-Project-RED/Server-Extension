@@ -8,13 +8,10 @@ import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
 import com.trpo.dominion.dao.GameState;
-import com.trpo.dominion.handlers.LoginEventHandler;
-import com.trpo.dominion.handlers.StepHandler;
-import com.trpo.dominion.handlers.ZoneJoinEventHandler;
+import com.trpo.dominion.handlers.*;
 import com.trpo.dominion.dao.CardArray;
 import com.trpo.dominion.game.GameLogic;
 import com.trpo.dominion.game.Player;
-import com.trpo.dominion.handlers.ReadyHandler;
 import com.trpo.dominion.utils.LastGameEndResponse;
 
 public class DominionExtension extends SFSExtension {
@@ -37,7 +34,7 @@ public class DominionExtension extends SFSExtension {
 
         //считаем кол-во готовых игроков
         addRequestHandler("ready", ReadyHandler.class);
-        //addRequestHandler("buy", ReadyHandler.class);
+        addRequestHandler("buy", BuyHandler.class);
         addRequestHandler("endTurn", StepHandler.class);
         //addRequestHandler("action", ReadyHandler.class);
 
@@ -72,6 +69,25 @@ public class DominionExtension extends SFSExtension {
         for(Player player: gameLogic.getPlayers()){
             sendNewCards(player);
         }
+
+        //отправляем инфу о текущем состоянии
+        for(Player player: gameLogic.getPlayers()){
+            player.updateCurrentPlayerState();
+            sendNewState(player);
+        }
+    }
+
+    public boolean checkBuy(User user, ISFSObject isfsObject){
+        trace("AAAAAAAAA33333333");
+        Player player = gameLogic.getPlayerById(user.getPlayerId());
+        trace("AAAAAAAAA44444444"+isfsObject.getUtfString("Name")+player.getPlayerInfo().getName());
+        if(player.buyNewCard(isfsObject.getUtfString("Name"))){
+            trace("AAAAAAAAA55555");
+            sendNewCards(player);
+            sendNewState(player);
+            return true;
+        }
+        return false;
     }
 
     public void endTurn(User user){
@@ -80,12 +96,21 @@ public class DominionExtension extends SFSExtension {
         send("step", getInitGameInfo(), getParentRoom().getUserList());
     }
 
+    public void sendNewState(Player player){
+        ISFSObject state = new SFSObject();
+        state.putInt("Money", player.getMoney());
+        state.putInt("Buy", player.getBuy());
+        state.putInt("Action", player.getActions());
+
+        send("state", state, player.getPlayerInfo());
+    }
+
     //отправка текущей руки, колоды и сброса
     public void sendNewCards(Player player){
         ISFSObject cards = new SFSObject();
         cards.putSFSArray("hand", player.convertToSFSArray(player.getHand()));
-        cards.putSFSArray("hide", player.convertToSFSArray(player.getHand()));
-        cards.putSFSArray("drop", player.convertToSFSArray(player.getHand()));
+        cards.putSFSArray("hide", player.convertToSFSArray(player.getHideCards()));
+        cards.putSFSArray("drop", player.convertToSFSArray(player.getDropCards()));
 
         send("cards", cards, player.getPlayerInfo());
 

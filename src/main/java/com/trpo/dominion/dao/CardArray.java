@@ -44,6 +44,7 @@ public class CardArray {
         cardObj.putInt("Cards", card.getCards());
         cardObj.putInt("Cost", card.getCost());
         cardObj.putUtfString("ImageId", card.getImageId());
+        cardObj.putUtfString("Type", card.getType());
         return cardObj;
     }
 
@@ -61,7 +62,7 @@ public class CardArray {
                 0,
                 false,
                 0,
-                "army-2026972_1280"));
+                "castle-3971786_960_720"));
 
         moneyCards.add(new CardInfo(
                 "Медь",
@@ -76,7 +77,7 @@ public class CardArray {
                 0,
                 false,
                 0,
-                "army-2026972_1280"));
+                "money-3468157_960_720"));
 
         moneyCards.add(new CardInfo(
                 "Серебро",
@@ -91,7 +92,7 @@ public class CardArray {
                 0,
                 false,
                 0,
-                "army-2026972_1280"));
+                "game-3468135_960_720"));
 
         moneyCards.add(new CardInfo(
                 "Золото",
@@ -106,13 +107,13 @@ public class CardArray {
                 0,
                 false,
                 0,
-                "army-2026972_1280"));
+                "coin-3468134_960_720"));
 
         cards.add(new CardInfo(
                 "ополчение",
                 "Все остальные игроки сбрасывают карты из руки, пока не останется не больше трех.",
                 "действие",
-                4,
+                3,//4
                 0,
                 0,
                 2,

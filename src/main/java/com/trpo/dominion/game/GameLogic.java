@@ -41,8 +41,6 @@ public class GameLogic {
         }
 
         gameState = GameState.FIRST_BUY;
-
-
     }
 
     private void changeState(GameState state) {
