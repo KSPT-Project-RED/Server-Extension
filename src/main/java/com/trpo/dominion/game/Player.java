@@ -21,6 +21,7 @@ public class Player {
     private Integer actions = 0;
     private Integer money = 0;
     private Integer buy = 0;
+    private Integer coins = 0;
     private User playerInfo;
 
     public ISFSArray convertToSFSArray(List<String> names){
@@ -38,9 +39,7 @@ public class Player {
     }
 
     public boolean buyNewCard(String card) {
-        //trace("AAAAAAAA66666666  "+card);
         CardInfo cardInfo = cardArray.getCardByName(card);
-        //trace("AAAAAAAA77777777");
         System.out.println(cardInfo.getCost()+" ;;; "+buy);
         if (cardInfo.getCost() <= money && buy > 0) {
             money -= cardInfo.getCost();
@@ -71,6 +70,7 @@ public class Player {
         money = 0;
         actions = 1;
         buy = 1;
+        coins = 0;
     }
 
     public void updateCurrentPlayerState() {
@@ -80,12 +80,29 @@ public class Player {
             if (cardInfo.getType().equals("деньги")) {
                 money += cardInfo.getMoney();
             }
+            if (cardInfo.getType().equals("очки")) {
+                coins += cardInfo.getCost();
+            }
         }
 
         for (String card : fieldCards) {
             CardInfo cardInfo = cardArray.getCardByName(card);
             actions += cardInfo.getAction();
             buy += cardInfo.getBuy();
+        }
+
+        for (String card : dropCards) {
+            CardInfo cardInfo = cardArray.getCardByName(card);
+            if (cardInfo.getType().equals("очки")) {
+                coins += cardInfo.getCost();
+            }
+        }
+
+        for (String card : hideCards) {
+            CardInfo cardInfo = cardArray.getCardByName(card);
+            if (cardInfo.getType().equals("очки")) {
+                coins += cardInfo.getCost();
+            }
         }
     }
 

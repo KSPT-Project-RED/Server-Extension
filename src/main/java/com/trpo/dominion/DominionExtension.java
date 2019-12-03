@@ -101,6 +101,7 @@ public class DominionExtension extends SFSExtension {
         state.putInt("Money", player.getMoney());
         state.putInt("Buy", player.getBuy());
         state.putInt("Action", player.getActions());
+        state.putInt("Coin", player.getCoins());
 
         send("state", state, player.getPlayerInfo());
     }
