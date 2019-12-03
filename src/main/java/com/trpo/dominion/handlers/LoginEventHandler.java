@@ -1,4 +1,4 @@
-package com.trpo.dominion;
+package com.trpo.dominion.handlers;
 
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
@@ -9,6 +9,7 @@ import com.smartfoxserver.v2.exceptions.SFSErrorData;
 import com.smartfoxserver.v2.exceptions.SFSException;
 import com.smartfoxserver.v2.exceptions.SFSLoginException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
+import com.trpo.dominion.DominionExtension;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

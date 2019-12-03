@@ -1,8 +1,10 @@
-package com.trpo.dominion;
+package com.trpo.dominion.handlers;
 
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 import com.smartfoxserver.v2.extensions.BaseClientRequestHandler;
+import com.trpo.dominion.DominionExtension;
+import com.trpo.dominion.utils.LastGameEndResponse;
 
 public class ReadyHandler extends BaseClientRequestHandler {
 
@@ -15,7 +17,7 @@ public class ReadyHandler extends BaseClientRequestHandler {
         {
             // Checks if two players are available and start game
             if (gameExt.getGameRoom().getSize().getUserCount() == 2)
-                gameExt.startGame();
+                gameExt.startGame(2);
         }
 
         else

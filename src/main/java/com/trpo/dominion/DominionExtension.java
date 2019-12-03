@@ -4,13 +4,18 @@ import com.smartfoxserver.v2.components.signup.SignUpAssistantComponent;
 import com.smartfoxserver.v2.core.SFSEventType;
 import com.smartfoxserver.v2.entities.Room;
 import com.smartfoxserver.v2.entities.User;
-import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
-import com.smartfoxserver.v2.entities.data.SFSArray;
 import com.smartfoxserver.v2.entities.data.SFSObject;
 import com.smartfoxserver.v2.extensions.SFSExtension;
-
-import javax.swing.text.html.HTMLDocument;
+import com.trpo.dominion.dao.GameState;
+import com.trpo.dominion.handlers.LoginEventHandler;
+import com.trpo.dominion.handlers.StepHandler;
+import com.trpo.dominion.handlers.ZoneJoinEventHandler;
+import com.trpo.dominion.dao.CardArray;
+import com.trpo.dominion.game.GameLogic;
+import com.trpo.dominion.game.Player;
+import com.trpo.dominion.handlers.ReadyHandler;
+import com.trpo.dominion.utils.LastGameEndResponse;
 
 public class DominionExtension extends SFSExtension {
 
@@ -19,11 +24,11 @@ public class DominionExtension extends SFSExtension {
     private LastGameEndResponse lastGameEndResponse;
     private SignUpAssistantComponent suac;
     public static final String DATABASE_ID = "users";
+    private GameLogic gameLogic;
 
     @Override
     public void init() {
-        TestInfo testInfo = new TestInfo();
-        trace("Dominion game Extension for SFS2X started! "+testInfo.getText());
+        trace("Dominion game Extension for SFS2X started! ");
 
         suac = new SignUpAssistantComponent();
         addRequestHandler(SignUpAssistantComponent.COMMAND_PREFIX, suac);
@@ -32,6 +37,10 @@ public class DominionExtension extends SFSExtension {
 
         //считаем кол-во готовых игроков
         addRequestHandler("ready", ReadyHandler.class);
+        //addRequestHandler("buy", ReadyHandler.class);
+        addRequestHandler("endTurn", StepHandler.class);
+        //addRequestHandler("action", ReadyHandler.class);
+
     }
 
     boolean isGameStarted()
@@ -39,13 +48,50 @@ public class DominionExtension extends SFSExtension {
         return gameStarted;
     }
 
-    void startGame()
+    public void startGame(int numOfPlayers)
     {
         if (gameStarted)
-            throw new IllegalStateException("Game is already started!");
+            throw new IllegalStateException("Game is already started! AAAAAAAA");
 
         lastGameEndResponse = null;
         gameStarted = true;
+
+        ISFSObject resObj = getInitGameInfo();
+
+        //формируем колоду (далее сделать несколько вариаций колод)
+        CardArray cardArray = new CardArray();
+        resObj.putSFSArray("cards", cardArray.getCardArray());
+
+        //отправляем игрокам информацию о всех игроках и очередности
+        send("start", resObj, getParentRoom().getUserList());
+
+        //создаем игровую сессию (инициализируем руки игроков и т.д.)
+        gameLogic = new GameLogic(numOfPlayers, getParentRoom().getUserByPlayerId(1), getParentRoom().getUserByPlayerId(2));
+
+        //отправляем игрокам инфу о их начальной руке
+        for(Player player: gameLogic.getPlayers()){
+            sendNewCards(player);
+        }
+    }
+
+    public void endTurn(User user){
+        gameLogic.setGameState(GameState.END);
+        sendNewCards(gameLogic.getPlayerById(user.getPlayerId()));
+        send("step", getInitGameInfo(), getParentRoom().getUserList());
+    }
+
+    //отправка текущей руки, колоды и сброса
+    public void sendNewCards(Player player){
+        ISFSObject cards = new SFSObject();
+        cards.putUtfStringArray("hand", player.getHand());
+        cards.putUtfStringArray("hide", player.getHideCards());
+        cards.putUtfStringArray("drop", player.getDropCards());
+
+        send("cards", cards, player.getPlayerInfo());
+
+    }
+
+    private ISFSObject getInitGameInfo(){
 
         User player1 = getParentRoom().getUserByPlayerId(1);
         User player2 = getParentRoom().getUserByPlayerId(2);
@@ -53,6 +99,11 @@ public class DominionExtension extends SFSExtension {
         //первым ходит игрок с id=1
         if (whoseTurn == null)
             whoseTurn = player1;
+        else if(whoseTurn == player1){
+            whoseTurn = player2;
+        } else if(whoseTurn == player2){
+            whoseTurn = player1;
+        }
 
         //сообщаем клиенту о старте игры
         ISFSObject resObj = new SFSObject();
@@ -62,71 +113,20 @@ public class DominionExtension extends SFSExtension {
         resObj.putUtfString("p2name", player2.getName());
         resObj.putInt("p2id", player2.getId());
 
-        //по-хорошему надо брать карты из бд, ну или хотя бы завести список компбинаций карт (сейчас используктся первая)
-        CardArray cardArray = new CardArray();
-        ISFSArray cards = new SFSArray();
-        for(int i=0;i<cardArray.getSize();i++){
-            ISFSObject card = new SFSObject();
-            card.putUtfString("Name", cardArray.getCards().get(i).getName());
-            card.putUtfString("Description", cardArray.getCards().get(i).getDescription());
-            card.putInt("Action", cardArray.getCards().get(i).getAction());
-            card.putInt("Money", cardArray.getCards().get(i).getMoney());
-            card.putInt("Buy", cardArray.getCards().get(i).getBuy());
-            card.putInt("Cards", cardArray.getCards().get(i).getCards());
-            card.putInt("Cost", cardArray.getCards().get(i).getCost());
-            card.putUtfString("ImageId", cardArray.getCards().get(i).getImageId());
-            cards.addSFSObject(card);
-        }
-
-
-        trace("SIZE CARD ARRAY: "+cards.size());
-        resObj.putSFSArray("cards", cards);
-
-        send("start", resObj, getParentRoom().getUserList());
+        return resObj;
     }
 
-    Room getGameRoom()
+    public Room getGameRoom()
     {
         return this.getParentRoom();
     }
 
-    void updateSpectator(User user)
-    {
-        ISFSObject resObj = new SFSObject();
-
-        User player1 = getParentRoom().getUserByPlayerId(1);
-        User player2 = getParentRoom().getUserByPlayerId(2);
-
-        resObj.putInt("t", whoseTurn == null ? 0 : whoseTurn.getPlayerId());
-        resObj.putBool("status", gameStarted);
-        //resObj.putSFSArray("board", gameBoard.toSFSArray());
-
-        if (player1 == null)
-            resObj.putInt("p1id", 0); // <--- indicates no P1
-        else
-        {
-            resObj.putInt("p1id", player1.getId());
-            resObj.putUtfString("p1name", player1.getName());
-        }
-
-        if (player2 == null)
-            resObj.putInt("p2id", 0); // <--- indicates no P2
-        else
-        {
-            resObj.putInt("p2id", player2.getId());
-            resObj.putUtfString("p2name", player2.getName());
-
-        }
-
-        send("specStatus", resObj, user);
-    }
-
-    LastGameEndResponse getLastGameEndResponse()
+    public LastGameEndResponse getLastGameEndResponse()
     {
         return lastGameEndResponse;
     }
 
-    void setLastGameEndResponse(LastGameEndResponse lastGameEndResponse)
+    public void setLastGameEndResponse(LastGameEndResponse lastGameEndResponse)
     {
         this.lastGameEndResponse = lastGameEndResponse;
     }

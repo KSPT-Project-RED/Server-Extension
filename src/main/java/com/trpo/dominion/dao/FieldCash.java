@@ -1,4 +1,4 @@
-package com.trpo.dominion;
+package com.trpo.dominion.dao;
 
 import lombok.Getter;
 import lombok.Setter;

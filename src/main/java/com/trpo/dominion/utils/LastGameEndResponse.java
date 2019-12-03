@@ -1,4 +1,4 @@
-package com.trpo.dominion;
+package com.trpo.dominion.utils;
 
 import com.smartfoxserver.v2.entities.data.ISFSObject;
 
