@@ -26,11 +26,13 @@ public class CardArray {
         return cardArray;
     }
 
-//    public ISFSArray getCardArrayByListName(List<String> names){
-//        for(String name:names){
-//
-//        }
-//    }
+    public ISFSArray getCardArrayByListName(List<String> names){
+        ISFSArray cardArray = new SFSArray();
+        for(String name:names){
+            cardArray.addSFSObject(getObject(getCardByName(name)));
+        }
+        return cardArray;
+    }
 
     public ISFSObject getObject(CardInfo card){
         ISFSObject cardObj = new SFSObject();

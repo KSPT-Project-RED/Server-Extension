@@ -1,6 +1,7 @@
 package com.trpo.dominion.game;
 
 import com.smartfoxserver.v2.entities.User;
+import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.trpo.dominion.dao.CardArray;
 import com.trpo.dominion.dao.CardInfo;
 import lombok.Getter;
@@ -21,6 +22,10 @@ public class Player {
     private Integer money = 0;
     private Integer buy = 0;
     private User playerInfo;
+
+    public ISFSArray convertToSFSArray(List<String> names){
+        return cardArray.getCardArrayByListName(names);
+    }
 
     Player(User playerInfo) {
         for(int i=0;i<7;i++){

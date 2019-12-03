@@ -83,9 +83,9 @@ public class DominionExtension extends SFSExtension {
     //отправка текущей руки, колоды и сброса
     public void sendNewCards(Player player){
         ISFSObject cards = new SFSObject();
-        cards.putUtfStringArray("hand", player.getHand());
-        cards.putUtfStringArray("hide", player.getHideCards());
-        cards.putUtfStringArray("drop", player.getDropCards());
+        cards.putSFSArray("hand", player.convertToSFSArray(player.getHand()));
+        cards.putSFSArray("hide", player.convertToSFSArray(player.getHand()));
+        cards.putSFSArray("drop", player.convertToSFSArray(player.getHand()));
 
         send("cards", cards, player.getPlayerInfo());
 
