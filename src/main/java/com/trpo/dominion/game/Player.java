@@ -51,15 +51,18 @@ public class Player {
     }
 
     //перетаскиваем карты из руки в поле
-    public boolean playToField(String card) {
-        CardInfo cardInfo = cardArray.getCardByName(card);
-        if (!cardInfo.getType().equals("деньги") && hand.contains(card) && actions > 0) {
-            fieldCards.add(card);
-            hand.remove(card);
-            actions--;
-            return true;
-        }
-        return false;
+    public void playToField(String card) {
+
+        System.out.println("CAAARD000: "+card);
+        fieldCards.add(card);
+//        CardInfo cardInfo = cardArray.getCardByName(card);
+//        if (!cardInfo.getType().equals("деньги") && hand.contains(card) && actions > 0) {
+//            fieldCards.add(card);
+//            hand.remove(card);
+//            actions--;
+//            return true;
+//        }
+//        return false;
     }
 
     public void deleteCardFromHand(String card) {
@@ -87,6 +90,8 @@ public class Player {
 
         for (String card : fieldCards) {
             CardInfo cardInfo = cardArray.getCardByName(card);
+            System.out.println("CAAARD: "+card);
+            System.out.println("CAAARD2: "+cardInfo.getAction());
             actions += cardInfo.getAction();
             buy += cardInfo.getBuy();
         }

@@ -36,7 +36,7 @@ public class DominionExtension extends SFSExtension {
         addRequestHandler("ready", ReadyHandler.class);
         addRequestHandler("buy", BuyHandler.class);
         addRequestHandler("endTurn", StepHandler.class);
-        //addRequestHandler("action", ReadyHandler.class);
+        addRequestHandler("action", ActionHandler.class);
 
     }
 
@@ -90,6 +90,20 @@ public class DominionExtension extends SFSExtension {
         return false;
     }
 
+    public void addField(User user, ISFSObject isfsObject){
+
+        for(Player player: gameLogic.getPlayers()){
+            player.playToField(isfsObject.getUtfString("NameCard"));
+            trace("ACTION111111");
+            sendNewCards(player);
+        }
+
+        Player player = gameLogic.getPlayerById(user.getPlayerId());
+        player.updateCurrentPlayerState();
+
+        sendNewState(player);
+    }
+
     public void endTurn(User user){
         gameLogic.setGameState(GameState.END);
         sendNewCards(gameLogic.getPlayerById(user.getPlayerId()));
@@ -112,6 +126,7 @@ public class DominionExtension extends SFSExtension {
         cards.putSFSArray("hand", player.convertToSFSArray(player.getHand()));
         cards.putSFSArray("hide", player.convertToSFSArray(player.getHideCards()));
         cards.putSFSArray("drop", player.convertToSFSArray(player.getDropCards()));
+        cards.putSFSArray("field", player.convertToSFSArray(player.getFieldCards()));
 
         send("cards", cards, player.getPlayerInfo());
 
