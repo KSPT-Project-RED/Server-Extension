@@ -82,6 +82,23 @@ public class DominionExtension extends SFSExtension {
         Player player = gameLogic.getPlayerById(user.getPlayerId());
         trace("AAAAAAAAA44444444"+isfsObject.getUtfString("Name")+player.getPlayerInfo().getName());
         if(player.buyNewCard(isfsObject.getUtfString("Name"))){
+
+            for(Player player1: gameLogic.getPlayers()){
+                player1.removeAllMoneyFromField(user.getPlayerId());
+                sendNewCards(player);
+            }
+
+
+            send("buy", isfsObject, getParentRoom().getUserList());
+
+            if(gameLogic.getGameState() == GameState.FIRST_BUY || gameLogic.getGameState() == GameState.FIRST_ACTION) {
+                gameLogic.setGameState(GameState.FIRST_BUY);
+            }else if(gameLogic.getGameState() == GameState.SECOND_BUY || gameLogic.getGameState() == GameState.SECOND_ACTION) {
+                gameLogic.setGameState(GameState.SECOND_BUY);
+            }
+
+            endStepToAll();
+
             trace("AAAAAAAAA55555");
             sendNewCards(player);
             sendNewState(player);
@@ -93,7 +110,7 @@ public class DominionExtension extends SFSExtension {
     public void addField(User user, ISFSObject isfsObject){
 
         for(Player player: gameLogic.getPlayers()){
-            player.playToField(isfsObject.getUtfString("NameCard"));
+            player.playToField(isfsObject.getUtfString("NameCard"), user.getPlayerId());
             trace("ACTION111111");
             sendNewCards(player);
         }
@@ -104,10 +121,41 @@ public class DominionExtension extends SFSExtension {
         sendNewState(player);
     }
 
+    public void endStepToAll(){
+        //отправляем инфу о текущем состоянии
+        for(Player player: gameLogic.getPlayers()){
+            player.updateCurrentPlayerState();
+            sendNewState(player);
+        }
+
+        ISFSObject step = new SFSObject();
+        step.putUtfString("Step", gameLogic.getGameState().toString());
+        send("step", step, getParentRoom().getUserList());
+    }
+
     public void endTurn(User user){
-        gameLogic.setGameState(GameState.END);
-        sendNewCards(gameLogic.getPlayerById(user.getPlayerId()));
-        send("step", getInitGameInfo(), getParentRoom().getUserList());
+
+        for(Player player: gameLogic.getPlayers()){
+            player.fieldToDrop(player.getPlayerInfo().getPlayerId());
+        }
+
+        gameLogic.getPlayerById(user.getPlayerId()).createHand();
+
+        for(Player player: gameLogic.getPlayers()){
+            sendNewCards(player);
+        }
+
+
+        if(gameLogic.getGameState() == GameState.FIRST_BUY || gameLogic.getGameState() == GameState.FIRST_ACTION) {
+            gameLogic.setGameState(GameState.SECOND_ACTION);
+        }else if(gameLogic.getGameState() == GameState.SECOND_BUY || gameLogic.getGameState() == GameState.SECOND_ACTION) {
+            gameLogic.setGameState(GameState.FIRST_ACTION);
+        }
+
+        endStepToAll();
+        //gameLogic.setGameState(GameState.valueOf(isfsObject.getUtfString("Step")));
+        //sendNewCards(gameLogic.getPlayerById(user.getPlayerId()));
+        //send("step", getInitGameInfo(), getParentRoom().getUserList());
     }
 
     public void sendNewState(Player player){

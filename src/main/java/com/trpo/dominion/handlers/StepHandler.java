@@ -12,7 +12,6 @@ public class StepHandler extends BaseClientRequestHandler {
     public void handleClientRequest(User user, ISFSObject isfsObject) {
         trace("STEP");
         DominionExtension gameExt = (DominionExtension) getParentExtension();
-        LastGameEndResponse endResponse = gameExt.getLastGameEndResponse();
         gameExt.endTurn(user);
 
     }

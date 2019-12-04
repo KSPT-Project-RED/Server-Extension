@@ -18,7 +18,7 @@ public class BuyHandler extends BaseClientRequestHandler {
             trace("AAAAAAAAA2222222");
 //            trace(user);
 //            trace(isfsObject);
-            send("buy", isfsObject, user);
+
         }
     }
 

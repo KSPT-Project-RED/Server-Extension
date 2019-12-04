@@ -50,11 +50,31 @@ public class Player {
         return false;
     }
 
+    public void removeAllMoneyFromField(int playerId){
+        List<String> tmp = new ArrayList<String>();
+        if (fieldCards.size()==0) return;
+        for(int i=0; i<fieldCards.size(); i++){
+            //System.out.println("RRRRRRRR: "+card);
+            if(fieldCards.get(i).equals("Медь")||fieldCards.get(i).equals("Серебро")||fieldCards.get(i).equals("Золото")){
+                if(playerInfo.getPlayerId() == playerId) {
+                    dropCards.add(fieldCards.get(i));
+                }
+            }else{
+                tmp.add(fieldCards.get(i));
+            }
+        }
+        fieldCards = tmp;
+    }
+
     //перетаскиваем карты из руки в поле
-    public void playToField(String card) {
+    public void playToField(String card, int playerId) {
 
         System.out.println("CAAARD000: "+card);
         fieldCards.add(card);
+        if(playerInfo.getPlayerId() == playerId){
+            hand.remove(card);
+            actions--;
+        }
 //        CardInfo cardInfo = cardArray.getCardByName(card);
 //        if (!cardInfo.getType().equals("деньги") && hand.contains(card) && actions > 0) {
 //            fieldCards.add(card);
@@ -80,9 +100,9 @@ public class Player {
         resetState();
         for (String card : hand) {
             CardInfo cardInfo = cardArray.getCardByName(card);
-            if (cardInfo.getType().equals("деньги")) {
-                money += cardInfo.getMoney();
-            }
+//            if (cardInfo.getType().equals("деньги")) {
+//                money += cardInfo.getMoney();
+//            }
             if (cardInfo.getType().equals("очки")) {
                 coins += cardInfo.getCost();
             }
@@ -90,10 +110,12 @@ public class Player {
 
         for (String card : fieldCards) {
             CardInfo cardInfo = cardArray.getCardByName(card);
-            System.out.println("CAAARD: "+card);
-            System.out.println("CAAARD2: "+cardInfo.getAction());
             actions += cardInfo.getAction();
             buy += cardInfo.getBuy();
+
+            if (cardInfo.getType().equals("деньги")) {
+                money += cardInfo.getMoney();
+            }
         }
 
         for (String card : dropCards) {
@@ -108,6 +130,17 @@ public class Player {
             if (cardInfo.getType().equals("очки")) {
                 coins += cardInfo.getCost();
             }
+        }
+    }
+
+    public void fieldToDrop(int playerId){
+        if(playerInfo.getPlayerId() == playerId){
+            for(String fieldCard: fieldCards){
+                dropCards.add(fieldCard);
+            }
+            fieldCards = new ArrayList<String>();
+        }else{
+            fieldCards = new ArrayList<String>();
         }
     }
 
