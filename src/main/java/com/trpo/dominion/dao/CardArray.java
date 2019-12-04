@@ -62,7 +62,37 @@ public class CardArray {
                 0,
                 false,
                 0,
+                "windmill-3626846_960_720"));
+
+        winCards.add(new CardInfo(
+                "Дом",
+                "",
+                "очки",
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                false,
+                0,
                 "castle-3971786_960_720"));
+
+        winCards.add(new CardInfo(
+                "Провинция",
+                "",
+                "очки",
+                3,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                false,
+                0,
+                "church-31328_960_720"));
 
         moneyCards.add(new CardInfo(
                 "Медь",
