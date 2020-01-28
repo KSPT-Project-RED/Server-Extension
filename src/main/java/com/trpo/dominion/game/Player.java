@@ -242,4 +242,8 @@ public class Player {
         }
         fieldCards = tmp;
     }
+    
+    public int getCardNumber() {
+        return hand.size();
+    }
 }

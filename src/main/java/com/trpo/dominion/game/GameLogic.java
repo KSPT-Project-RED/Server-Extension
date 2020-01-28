@@ -62,7 +62,7 @@ public class GameLogic {
         //формируем ответ для остальных игроков (если карта действия влияет на них)
         //и для себя (чтобы в клиенте игрок сделал нужное действие)
         CardInfo card = cardArray.getCardByName(cardName);
-        String message;
+        String message = "NoAction";
         switch (card.getName()) {
             case "ополчение":
                 //все остальные игроки сбрасывают карты, пока не останется не более 3
@@ -75,7 +75,6 @@ public class GameLogic {
             case "мастерская":
                 //получаем любую карту не дороже 4
                 player.addNumCards(1, 4);
-                message = "NoAction";
                 break;
             case "реконструкция":
                 //скидываем одну карту и получаем одну не дороже 2
@@ -88,16 +87,13 @@ public class GameLogic {
             case "кузница":
                 //+3 карты
                 player.addNumCards(3);
-                message = "NoAction";
                 break;
             case "деревня":
             case "торговец":
                 //+1 карта
                 player.addNumCards(1);
-                message = "NoAction";
                 break;
             default:
-                message = "NoAction";
                 break;
         }
         return message;
