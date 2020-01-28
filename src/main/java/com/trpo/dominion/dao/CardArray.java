@@ -11,30 +11,28 @@ import java.util.List;
 
 @Getter
 public class CardArray {
-    List<CardInfo> cards = new ArrayList<CardInfo>();
-    List<CardInfo> moneyCards = new ArrayList<CardInfo>();
-    List<CardInfo> winCards = new ArrayList<CardInfo>();
-
+    private final List<CardInfo> cards = new ArrayList<>();
+    private final List<CardInfo> moneyCards = new ArrayList<>();
+    private final List<CardInfo> winCards = new ArrayList<>();
 
     //по-хорошему надо брать карты из бд, ну или хотя бы завести список компбинаций карт (сейчас используктся первая)
     public ISFSArray getCardArray() {
         ISFSArray cardArray = new SFSArray();
-        for (int i = 0; i < cards.size(); i++) {
-            cardArray.addSFSObject(getObject(cards.get(i)));
+        for (CardInfo card : cards) {
+            cardArray.addSFSObject(getObject(card));
         }
-
         return cardArray;
     }
 
-    public ISFSArray getCardArrayByListName(List<String> names){
+    public ISFSArray getCardArrayByListName(List<String> names) {
         ISFSArray cardArray = new SFSArray();
-        for(String name:names){
+        for (String name : names) {
             cardArray.addSFSObject(getObject(getCardByName(name)));
         }
         return cardArray;
     }
 
-    public ISFSObject getObject(CardInfo card){
+    public ISFSObject getObject(CardInfo card) {
         ISFSObject cardObj = new SFSObject();
         cardObj.putUtfString("Name", card.getName());
         cardObj.putUtfString("Description", card.getDescription());
@@ -292,29 +290,25 @@ public class CardArray {
 
     public CardInfo getCardByName(String name) {
         //поиск в картах действия
-        for (int i = 0; i < cards.size(); i++) {
-            if (cards.get(i).getName().equals(name)) {
-                return cards.get(i);
+        for (CardInfo card : cards) {
+            if (card.getName().equals(name)) {
+                return card;
             }
         }
 
         //поиск в картах денег
-        for (int i = 0; i < moneyCards.size(); i++) {
-            if (moneyCards.get(i).getName().equals(name)) {
-                return moneyCards.get(i);
+        for (CardInfo moneyCard : moneyCards) {
+            if (moneyCard.getName().equals(name)) {
+                return moneyCard;
             }
         }
 
         //поиск в картах очков
-        for (int i = 0; i < winCards.size(); i++) {
-            if (winCards.get(i).getName().equals(name)) {
-                return winCards.get(i);
+        for (CardInfo winCard : winCards) {
+            if (winCard.getName().equals(name)) {
+                return winCard;
             }
         }
         return null;
-    }
-
-    public Integer getSize() {
-        return cards.size();
     }
 }

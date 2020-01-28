@@ -9,9 +9,8 @@ public class DropCardHandler extends BaseClientRequestHandler {
 
     @Override
     public void handleClientRequest(User user, ISFSObject isfsObject) {
-        trace("DropCard");
+        trace("DropCardHandler");
         DominionExtension gameExt = (DominionExtension) getParentExtension();
-
         gameExt.DropCard(user, isfsObject);
     }
 }

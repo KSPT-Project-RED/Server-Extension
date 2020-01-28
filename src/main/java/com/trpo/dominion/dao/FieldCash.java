@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class FieldCash {
-
     private Integer bronze;
     private Integer silver;
     private Integer gold;
@@ -15,7 +14,7 @@ public class FieldCash {
     private final Integer silverCost = 3;
     private final Integer goldCost = 6;
 
-    public void resetCash(){
+    public void resetCash() {
         bronze = 60;
         silver = 40;
         gold = 30;

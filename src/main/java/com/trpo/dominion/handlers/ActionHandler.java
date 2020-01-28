@@ -9,7 +9,7 @@ public class ActionHandler extends BaseClientRequestHandler {
 
     @Override
     public void handleClientRequest(User user, ISFSObject isfsObject) {
-        trace("ACTION");
+        trace("ActionHandler");
         DominionExtension gameExt = (DominionExtension) getParentExtension();
         gameExt.addAction(user, isfsObject);
     }

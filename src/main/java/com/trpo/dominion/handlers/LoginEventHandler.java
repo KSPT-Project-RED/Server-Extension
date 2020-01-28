@@ -1,5 +1,10 @@
 package com.trpo.dominion.handlers;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import com.smartfoxserver.bitswarm.sessions.ISession;
 import com.smartfoxserver.v2.core.ISFSEvent;
 import com.smartfoxserver.v2.core.SFSEventParam;
@@ -11,17 +16,11 @@ import com.smartfoxserver.v2.exceptions.SFSLoginException;
 import com.smartfoxserver.v2.extensions.BaseServerEventHandler;
 import com.trpo.dominion.DominionExtension;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+public class LoginEventHandler extends BaseServerEventHandler {
 
-public class LoginEventHandler extends BaseServerEventHandler
-{
     @Override
-    public void handleServerEvent(ISFSEvent event) throws SFSException
-    {
-        trace("RRRRRRR1");
+    public void handleServerEvent(ISFSEvent event) throws SFSException {
+        trace("LoginEventHandler");
         // Grab parameters from client request
         String userName = (String) event.getParameter(SFSEventParam.LOGIN_NAME);
         String cryptedPass = (String) event.getParameter(SFSEventParam.LOGIN_PASSWORD);
@@ -30,9 +29,7 @@ public class LoginEventHandler extends BaseServerEventHandler
         // Get password from DB
         IDBManager dbManager = getParentExtension().getParentZone().getDBManager();
         Connection connection = null;
-
-        try
-        {
+        try {
             // Grab a connection from the DBManager connection pool
             connection = dbManager.getConnection();
 
@@ -46,8 +43,7 @@ public class LoginEventHandler extends BaseServerEventHandler
             ResultSet res = stmt.executeQuery();
 
             // Verify that one record was found
-            if (!res.first())
-            {
+            if (!res.first()) {
                 // This is the part that goes to the client
                 SFSErrorData errData = new SFSErrorData(SFSErrorCode.LOGIN_BAD_USERNAME);
                 errData.addParameter(userName);
@@ -60,36 +56,30 @@ public class LoginEventHandler extends BaseServerEventHandler
             int dbId = res.getInt("id");
 
             // Verify the secure password
-            if (!getApi().checkSecurePassword(session, dbPword, cryptedPass))
-            {
+            if (!getApi().checkSecurePassword(session, dbPword, cryptedPass)) {
                 SFSErrorData data = new SFSErrorData(SFSErrorCode.LOGIN_BAD_PASSWORD);
                 data.addParameter(userName);
 
-                throw new SFSLoginException("Login failed for user: "  + userName, data);
+                throw new SFSLoginException("Login failed for user: " + userName, data);
             }
 
             // Store the client dbId in the session
             session.setProperty(DominionExtension.DATABASE_ID, dbId);
-        }
+        } catch (SQLException e) {
+            // User name was not found
+            SFSErrorData error = new SFSErrorData(SFSErrorCode.GENERIC_ERROR);
+            error.addParameter("SQL Error: " + e.getMessage());
 
-        // User name was not found
-        catch (SQLException e)
-        {
-            SFSErrorData errData = new SFSErrorData(SFSErrorCode.GENERIC_ERROR);
-            errData.addParameter("SQL Error: " + e.getMessage());
-
-            throw new SFSLoginException("A SQL Error occurred: " + e.getMessage(), errData);
-        }
-
-        finally
-        {
+            throw new SFSLoginException("A SQL Error occurred: " + e.getMessage(), error);
+        } finally {
             // Return connection to the DBManager connection pool
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 }
-

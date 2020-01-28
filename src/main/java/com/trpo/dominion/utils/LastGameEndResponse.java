@@ -6,19 +6,16 @@ public class LastGameEndResponse {
     private final ISFSObject params;
     private final String cmd;
 
-    public LastGameEndResponse(String cmd, ISFSObject params)
-    {
+    public LastGameEndResponse(String cmd, ISFSObject params) {
         this.params = params;
         this.cmd = cmd;
     }
 
-    public String getCmd()
-    {
+    public String getCmd() {
         return cmd;
     }
 
-    public ISFSObject getParams()
-    {
+    public ISFSObject getParams() {
         return params;
     }
 }

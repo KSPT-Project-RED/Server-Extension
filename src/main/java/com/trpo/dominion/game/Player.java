@@ -1,5 +1,8 @@
 package com.trpo.dominion.game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.smartfoxserver.v2.entities.User;
 import com.smartfoxserver.v2.entities.data.ISFSArray;
 import com.smartfoxserver.v2.entities.data.ISFSObject;
@@ -8,23 +11,20 @@ import com.trpo.dominion.dao.CardArray;
 import com.trpo.dominion.dao.CardInfo;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 public class Player {
 
     //отложенные карты, которые рубашкой вверх
-    private List<String> hideCards = new ArrayList<String>();
+    private List<String> hideCards = new ArrayList<>();
 
     //текущая рука игрока
-    private List<String> hand = new ArrayList<String>();
+    private List<String> hand = new ArrayList<>();
 
     //карты сброса - карты, которые были разыграны, но еще не вернулись в колоду
-    private List<String> dropCards = new ArrayList<String>();
+    private List<String> dropCards = new ArrayList<>();
 
     //карты игрока, которые на поле
-    private List<String> fieldCards = new ArrayList<String>();
+    private List<String> fieldCards = new ArrayList<>();
 
     //инофрмация о всех игровых картах
     private CardArray cardArray = new CardArray();
@@ -44,20 +44,19 @@ public class Player {
     //техническая информация о игроке
     private User playerInfo;
 
-    public ISFSArray convertToSFSArray(List<String> names){
+    public ISFSArray convertToSFSArray(List<String> names) {
         return cardArray.getCardArrayByListName(names);
     }
 
     //инициализация игрока
     Player(User playerInfo) {
-
         //предоставление обязательных 7 меди
-        for(int i=0;i<7;i++) {
+        for (int i = 0; i < 7; i++) {
             hideCards.add("Медь");
         }
 
         //предоставление обязательных 3х карт поместья
-        for(int i=0;i<3;i++) {
+        for (int i = 0; i < 3; i++) {
             hideCards.add("Поместье");
         }
 
@@ -89,7 +88,7 @@ public class Player {
         fieldCards.add(card);
 
         //карта уходит только из руки игрока, чей ход
-        if(playerInfo.getPlayerId() == playerId){
+        if (playerInfo.getPlayerId() == playerId) {
             hand.remove(card);
 
             if (!cardInfo.getType().equals("деньги") && hand.contains(card)) {
@@ -151,30 +150,21 @@ public class Player {
     }
 
     //после хода карты с поля идут в сброс
-    public void fieldToDrop(int playerId){
-        if(playerInfo.getPlayerId() == playerId){
-
-            for(String fieldCard: fieldCards){
-                dropCards.add(fieldCard);
-            }
-
-            fieldCards = new ArrayList<String>();
-        }else{
-            fieldCards = new ArrayList<String>();
+    public void fieldToDrop(int playerId) {
+        if (playerInfo.getPlayerId() == playerId) {
+            dropCards.addAll(fieldCards);
         }
+        fieldCards = new ArrayList<>();
     }
 
     //создание игровой руки при старте игровой сессии и на каждом шаге
     public void createHand() {
-
         //если в руке есть карты, то надо карты все эти карты сбросить
-        if(hand.size()!=0){
-            for(String handCard:hand){
-                dropCards.add(handCard);
-            }
+        if (hand.size() != 0) {
+            dropCards.addAll(hand);
         }
 
-        hand = new ArrayList<String>();
+        hand = new ArrayList<>();
 
         addNumCards(5);
     }
@@ -182,12 +172,12 @@ public class Player {
     //тасуем калоду и раздаем в руку
     private void shuffleAndToHand(int numCards, int cost) {
         for (int i = 0; i < numCards; i++) {
-            int randomNum = 0 + (int) (Math.random() * hideCards.size());
+            int randomNum = (int) (Math.random() * hideCards.size());
 
             CardInfo card = cardArray.getCardByName(hideCards.get(randomNum));
-            if(card.getCost() > cost){
+            if (card.getCost() > cost) {
                 i--;
-            }else{
+            } else {
                 hand.add(hideCards.get(randomNum));
                 hideCards.remove(randomNum);
             }
@@ -197,28 +187,23 @@ public class Player {
     public void addNumCards(int numCards, int cost) {
         //если в колоде меньше 5 карт, то оставшиеся карты переходя в руку, а сброс превращается в колоду
         if (hideCards.size() < numCards) {
-            for (String hideCard : hideCards) {
-                hand.add(hideCard);
-            }
+            hand.addAll(hideCards);
             hideCards.clear();
 
-            for (String dropCard : dropCards) {
-                hideCards.add(dropCard);
-            }
+            hideCards.addAll(dropCards);
             dropCards.clear();
 
             shuffleAndToHand(5 - hand.size(), cost);
-
         } else {
             shuffleAndToHand(numCards, cost);
         }
     }
 
-    public void addNumCards(int numCards){
+    public void addNumCards(int numCards) {
         addNumCards(numCards, 10000000);
     }
 
-    public ISFSObject getAllCards(){
+    public ISFSObject getAllCards() {
         ISFSObject cards = new SFSObject();
         cards.putSFSArray("hand", convertToSFSArray(getHand()));
         cards.putSFSArray("hide", convertToSFSArray(getHideCards()));
@@ -228,7 +213,7 @@ public class Player {
         return cards;
     }
 
-    public ISFSObject getState(){
+    public ISFSObject getState() {
         ISFSObject state = new SFSObject();
         state.putInt("Money", getMoney());
         state.putInt("Buy", getBuy());
@@ -238,21 +223,21 @@ public class Player {
         return state;
     }
 
-    public void removeAllMoneyFromField(int playerId){
-        List<String> tmp = new ArrayList<String>();
-
-        if (fieldCards.size()==0) return;
-
-        for(int i=0; i<fieldCards.size(); i++){
-            if(fieldCards.get(i).equals("Медь")
-                    ||fieldCards.get(i).equals("Серебро")
-                    ||fieldCards.get(i).equals("Золото")){
-
-                if(playerInfo.getPlayerId() == playerId) {
-                    dropCards.add(fieldCards.get(i));
+    public void removeAllMoneyFromField(int playerId) {
+        if (fieldCards.size() == 0) {
+            return;
+        }
+        
+        List<String> tmp = new ArrayList<>();
+        for (String fieldCard : fieldCards) {
+            if (fieldCard.equals("Медь")
+                    || fieldCard.equals("Серебро")
+                    || fieldCard.equals("Золото")) {
+                if (playerInfo.getPlayerId() == playerId) {
+                    dropCards.add(fieldCard);
                 }
-            }else{
-                tmp.add(fieldCards.get(i));
+            } else {
+                tmp.add(fieldCard);
             }
         }
         fieldCards = tmp;
