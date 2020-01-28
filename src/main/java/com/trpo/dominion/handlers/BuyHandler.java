@@ -12,13 +12,8 @@ public class BuyHandler extends BaseClientRequestHandler {
     public void handleClientRequest(User user, ISFSObject isfsObject) {
         trace("BUY");
         DominionExtension gameExt = (DominionExtension) getParentExtension();
-        //LastGameEndResponse endResponse = gameExt.getLastGameEndResponse();
-        trace("AAAAAAAAA11111");
         if(gameExt.checkBuy(user, isfsObject)) {
             trace("AAAAAAAAA2222222");
-//            trace(user);
-//            trace(isfsObject);
-
         }
     }
 

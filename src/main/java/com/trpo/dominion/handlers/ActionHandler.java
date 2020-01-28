@@ -11,10 +11,6 @@ public class ActionHandler extends BaseClientRequestHandler {
     public void handleClientRequest(User user, ISFSObject isfsObject) {
         trace("ACTION");
         DominionExtension gameExt = (DominionExtension) getParentExtension();
-        gameExt.addField(user, isfsObject);
-
-//        if (gameExt.checkBuy(user, isfsObject)) {
-//            send("buy", isfsObject, user);
-//        }
+        gameExt.addAction(user, isfsObject);
     }
 }

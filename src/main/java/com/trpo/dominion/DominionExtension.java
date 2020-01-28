@@ -18,10 +18,10 @@ public class DominionExtension extends SFSExtension {
 
     private boolean gameStarted;
     private User whoseTurn;
-    private LastGameEndResponse lastGameEndResponse;
     private SignUpAssistantComponent suac;
     public static final String DATABASE_ID = "users";
     private GameLogic gameLogic;
+
 
     @Override
     public void init() {
@@ -37,7 +37,7 @@ public class DominionExtension extends SFSExtension {
         addRequestHandler("buy", BuyHandler.class);
         addRequestHandler("endTurn", StepHandler.class);
         addRequestHandler("action", ActionHandler.class);
-
+        addRequestHandler("DropCard", DropCardHandler.class);
     }
 
     boolean isGameStarted()
@@ -47,10 +47,10 @@ public class DominionExtension extends SFSExtension {
 
     public void startGame(int numOfPlayers)
     {
+        trace("QQQQQQQ1");
         if (gameStarted)
-            throw new IllegalStateException("Game is already started! AAAAAAAA");
+            throw new IllegalStateException("Game is already started!");
 
-        lastGameEndResponse = null;
         gameStarted = true;
 
         ISFSObject resObj = getInitGameInfo();
@@ -63,7 +63,7 @@ public class DominionExtension extends SFSExtension {
         send("start", resObj, getParentRoom().getUserList());
 
         //создаем игровую сессию (инициализируем руки игроков и т.д.)
-        gameLogic = new GameLogic(numOfPlayers, getParentRoom().getUserByPlayerId(1), getParentRoom().getUserByPlayerId(2));
+        gameLogic = new GameLogic(getParentRoom().getPlayersList());
 
         //отправляем игрокам инфу о их начальной руке
         for(Player player: gameLogic.getPlayers()){
@@ -77,48 +77,60 @@ public class DominionExtension extends SFSExtension {
         }
     }
 
-    public boolean checkBuy(User user, ISFSObject isfsObject){
-        trace("AAAAAAAAA33333333");
+    public void DropCard(User user, ISFSObject isfsObject){
+
         Player player = gameLogic.getPlayerById(user.getPlayerId());
-        trace("AAAAAAAAA44444444"+isfsObject.getUtfString("Name")+player.getPlayerInfo().getName());
+        player.deleteCardFromHand(isfsObject.getUtfString("DropCard"));
+        sendNewCards(player);
+
+    }
+
+    public boolean checkBuy(User user, ISFSObject isfsObject){
+
+        Player player = gameLogic.getPlayerById(user.getPlayerId());
+
         if(player.buyNewCard(isfsObject.getUtfString("Name"))){
 
             for(Player player1: gameLogic.getPlayers()){
                 player1.removeAllMoneyFromField(user.getPlayerId());
-                sendNewCards(player);
+                sendNewCards(player1);
             }
-
 
             send("buy", isfsObject, getParentRoom().getUserList());
 
-            if(gameLogic.getGameState() == GameState.FIRST_BUY || gameLogic.getGameState() == GameState.FIRST_ACTION) {
-                gameLogic.setGameState(GameState.FIRST_BUY);
-            }else if(gameLogic.getGameState() == GameState.SECOND_BUY || gameLogic.getGameState() == GameState.SECOND_ACTION) {
-                gameLogic.setGameState(GameState.SECOND_BUY);
-            }
+            gameLogic.endTurn(user, "BUY");
 
             endStepToAll();
-
-            trace("AAAAAAAAA55555");
             sendNewCards(player);
             sendNewState(player);
+
             return true;
         }
+
         return false;
     }
 
-    public void addField(User user, ISFSObject isfsObject){
+    //обрабатываем карту действия
+    public void addAction(User user, ISFSObject isfsObject){
+        String message = gameLogic.processCard(isfsObject.getUtfString("NameCard"), user);
 
+        //после действия обновляем карты у всех игроков
         for(Player player: gameLogic.getPlayers()){
-            player.playToField(isfsObject.getUtfString("NameCard"), user.getPlayerId());
-            trace("ACTION111111");
             sendNewCards(player);
+            if(player.getPlayerInfo().getPlayerId() == user.getPlayerId()){
+                sendNewState(player);
+            }
         }
 
-        Player player = gameLogic.getPlayerById(user.getPlayerId());
-        player.updateCurrentPlayerState();
-
-        sendNewState(player);
+        //отправка всем сообщения
+        ISFSObject command = new SFSObject();
+        command.putUtfString("command", message);
+        for(Player player: gameLogic.getPlayers()) {
+            if(user.getPlayerId() != player.getPlayerInfo().getPlayerId()) {
+                trace("1111Send "+message);
+                send("command", command, player.getPlayerInfo());
+            }
+        }
     }
 
     public void endStepToAll(){
@@ -130,93 +142,48 @@ public class DominionExtension extends SFSExtension {
 
         ISFSObject step = new SFSObject();
         step.putUtfString("Step", gameLogic.getGameState().toString());
+        step.putInt("currentTurn", gameLogic.getTurnNumber());
         send("step", step, getParentRoom().getUserList());
     }
 
     public void endTurn(User user){
-
-        for(Player player: gameLogic.getPlayers()){
-            player.fieldToDrop(player.getPlayerInfo().getPlayerId());
-        }
-
-        gameLogic.getPlayerById(user.getPlayerId()).createHand();
+        gameLogic.endTurn(user);
 
         for(Player player: gameLogic.getPlayers()){
             sendNewCards(player);
         }
 
-
-        if(gameLogic.getGameState() == GameState.FIRST_BUY || gameLogic.getGameState() == GameState.FIRST_ACTION) {
-            gameLogic.setGameState(GameState.SECOND_ACTION);
-        }else if(gameLogic.getGameState() == GameState.SECOND_BUY || gameLogic.getGameState() == GameState.SECOND_ACTION) {
-            gameLogic.setGameState(GameState.FIRST_ACTION);
-        }
-
         endStepToAll();
-        //gameLogic.setGameState(GameState.valueOf(isfsObject.getUtfString("Step")));
-        //sendNewCards(gameLogic.getPlayerById(user.getPlayerId()));
-        //send("step", getInitGameInfo(), getParentRoom().getUserList());
     }
 
+    //отправляем состояние игрока (деньги, карты и т.д.)
     public void sendNewState(Player player){
-        ISFSObject state = new SFSObject();
-        state.putInt("Money", player.getMoney());
-        state.putInt("Buy", player.getBuy());
-        state.putInt("Action", player.getActions());
-        state.putInt("Coin", player.getCoins());
-
-        send("state", state, player.getPlayerInfo());
+        send("state", player.getState(), player.getPlayerInfo());
     }
 
     //отправка текущей руки, колоды и сброса
     public void sendNewCards(Player player){
-        ISFSObject cards = new SFSObject();
-        cards.putSFSArray("hand", player.convertToSFSArray(player.getHand()));
-        cards.putSFSArray("hide", player.convertToSFSArray(player.getHideCards()));
-        cards.putSFSArray("drop", player.convertToSFSArray(player.getDropCards()));
-        cards.putSFSArray("field", player.convertToSFSArray(player.getFieldCards()));
-
-        send("cards", cards, player.getPlayerInfo());
-
+        trace("AAAAAAA SEND HANDS "+ player.getPlayerInfo().getPlayerId());
+        send("cards", player.getAllCards(), player.getPlayerInfo());
     }
 
     private ISFSObject getInitGameInfo(){
 
-        User player1 = getParentRoom().getUserByPlayerId(1);
-        User player2 = getParentRoom().getUserByPlayerId(2);
+        ISFSObject resObj = new SFSObject();
 
-        //первым ходит игрок с id=1
-        if (whoseTurn == null)
-            whoseTurn = player1;
-        else if(whoseTurn == player1){
-            whoseTurn = player2;
-        } else if(whoseTurn == player2){
-            whoseTurn = player1;
+        for(int i=0;i< getParentRoom().getPlayersList().size();i++){
+            User player = getParentRoom().getPlayersList().get(i);
+            resObj.putInt("t"+i, player.getPlayerId());
+            resObj.putUtfString("name"+i, player.getName());
+            resObj.putInt("id"+i, player.getId());
         }
 
-        //сообщаем клиенту о старте игры
-        ISFSObject resObj = new SFSObject();
-        resObj.putInt("t", whoseTurn.getPlayerId());
-        resObj.putUtfString("p1name", player1.getName());
-        resObj.putInt("p1id", player1.getId());
-        resObj.putUtfString("p2name", player2.getName());
-        resObj.putInt("p2id", player2.getId());
-
+        resObj.putInt("num", getParentRoom().getPlayersList().size());
         return resObj;
     }
 
     public Room getGameRoom()
     {
         return this.getParentRoom();
-    }
-
-    public LastGameEndResponse getLastGameEndResponse()
-    {
-        return lastGameEndResponse;
-    }
-
-    public void setLastGameEndResponse(LastGameEndResponse lastGameEndResponse)
-    {
-        this.lastGameEndResponse = lastGameEndResponse;
     }
 }
