@@ -15,20 +15,20 @@
 
     <dependencies>
         <!-- SmartFoxServer -->
-        <dependency>
-            <groupId>com.smartfoxserver</groupId>
-            <artifactId>v2</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/sfs2x.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.smartfoxserver</groupId>
-            <artifactId>core</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/sfs2x-core.jar</systemPath>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.smartfoxserver</groupId>-->
+<!--            <artifactId>v2</artifactId>-->
+<!--            <version>1.0</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/resources/sfs2x.jar</systemPath>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.smartfoxserver</groupId>-->
+<!--            <artifactId>core</artifactId>-->
+<!--            <version>1.0</version>-->
+<!--            <scope>system</scope>-->
+<!--            <systemPath>${project.basedir}/src/main/resources/sfs2x-core.jar</systemPath>-->
+<!--        </dependency>-->
 
         <!-- Lombok -->
         <dependency>
